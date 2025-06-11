@@ -8,9 +8,12 @@
   cursor: pointer;
   box-shadow: 0 2px 6px #0001;
   transition: background 0.2s;
+  display: block;
+  margin: 0 auto;
 }
 
 .lavender-btn:hover {
+
   background: #d1a8ec;        /* Paler/lighter lavender for hover */
 }
 body {
