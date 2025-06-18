@@ -23,7 +23,7 @@ app.post('/api/login', (req, res) => {
     bcrypt.compare(password, user.password, (err, result) => {
       if (result) {
         const token = jwt.sign({ userId: user.id, username: user.username }, SECRET, { expiresIn: "1h" });
-        res.json({ token });
+        res.json({ token, username: user.username });
       } else {
         res.status(401).json({ error: "Invalid credentials" });
       }
@@ -71,9 +71,11 @@ app.post('/api/grievances', auth, (req, res) => {
 app.get('/api/grievances', auth, (req, res) => {
   const db = new sqlite3.Database('grievances.db');
   db.all(
-    `SELECT id, title, description, severity, mood, created_at FROM grievances
-     WHERE user_id = ? ORDER BY created_at DESC`,
-    [req.user.userId],
+    `SELECT grievances.id, grievances.title, grievances.description, grievances.severity, grievances.mood, grievances.created_at, grievances.user_id, users.username
+    FROM grievances
+    JOIN users ON grievances.user_id = users.id
+    ORDER BY grievances.created_at DESC`,
+    [],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
 
@@ -119,6 +121,31 @@ app.post('/api/grievances/:id/reply', auth, (req, res) => {
       res.json({ success: true, id: this.lastID });
     }
   );
+});
+// DELETE /api/grievances/:id -- deletes grievance AND its replies
+app.delete('/api/grievances/:id', auth, (req, res) => {
+  const db = new sqlite3.Database('grievances.db');
+  const grievance_id = req.params.id;
+
+  db.serialize(() => {
+    // First, delete all replies for this grievance
+    db.run("DELETE FROM replies WHERE grievance_id = ?", [grievance_id], function(err) {
+      if (err) {
+        db.close();
+        return res.status(500).json({ error: err.message });
+      }
+      // Then, delete the grievance itself (for THIS user)
+      db.run("DELETE FROM grievances WHERE id = ? AND user_id = ?", [grievance_id, req.user.userId], function(err2) {
+        db.close();
+        if (err2) return res.status(500).json({ error: err2.message });
+        if (this.changes === 0) {
+          // Nothing deleted, either wrong user or no such grievance
+          return res.status(404).json({ error: "Not found" });
+        }
+        res.json({ success: true });
+      });
+    });
+  });
 });
 
 // ========== (OPTIONAL) GET REPLIES FOR ONE GRIEVANCE ==========
