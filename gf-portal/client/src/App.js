@@ -268,6 +268,11 @@ const MOOD_OPTIONS = [
   { label: "Sad", value: "sad", img: "/png/crying.png" },
   { label: "Angry", value: "angry", img: "/png/grumpy.png" },
   { label: "Confused", value: "confused", img: "/png/too_bright.png" },
+  { label: "Cute", value: "cute", img: "/png/cute_fluffy.png" },
+  { label: "Yucky", value: "yucky", img: "/png/hmph.png" },
+  { label: "Professional", value: "professional", img: "/png/tie.png" },
+  { label: "Oop!", value: "oop", img: "/png/welp.png" },
+  { label: "Magical", value: "magical", img: "/png/wizard.png" },
 ];
 
 // Helper function to get a color between green and red
@@ -334,18 +339,57 @@ function Portal({
       setSubmitMsg("Failed to submit: " + (err.response?.data?.error || "Unknown error"));
     }
   };
+  const MOOD_IMG_POSITIONS = {
+  happy: "center 50%",
+  sad: "center 40%",
+  angry: "center 50%",
+  cute: "center 53%",
+  confused: "center 100%",
+  oop: "center 53%",
+  magical: "center 53%",
+  professional: "center 1%",
+  yucky: "center 53%",
+};
 
   return (
+  <div
+    style={{
+      minHeight: "100vh",
+      background: "#b57edc",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative",
+    }}
+  >
+    {/* Side images & card in a row */}
     <div
       style={{
-        minHeight: "100vh",
-        background: "#b57edc",
         display: "flex",
+        flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        flexDirection: "column",
+        width: "100%",
+        maxWidth: 1200,
+        margin: "0 auto",
+        marginTop: 40,
+        marginBottom: 30,
       }}
     >
+      {/* Left image */}
+      <img
+        src="/png/outside.png"
+        alt="Left"
+        style={{
+          width: 450,
+          height: 800,
+          marginRight: -136,
+          marginBottom: 400,
+        }}
+      />
+
+      {/* Main card */}
       <div
         style={{
           background: "white",
@@ -356,22 +400,26 @@ function Portal({
           width: "100%",
           textAlign: "center",
           zIndex: 2,
+          position: "relative",
         }}
       >
-          <img
-            src="/png/pee.png"
-            style={{
-              width: 80,
-              height: 120,
-              marginBottom: -50,
-            }}
-          />
-        <h2 style={{
-          color: "#b57edc",
-          marginBottom: 24,
-          fontWeight: 700,
-          fontSize: 26
-        }}>
+        <img
+          src="/png/pee.png"
+          alt="Decorative"
+          style={{
+            width: 128,
+            height: 200,
+            marginBottom: -50,
+          }}
+        />
+        <h2
+          style={{
+            color: "#b57edc",
+            marginBottom: 24,
+            fontWeight: 700,
+            fontSize: 26,
+          }}
+        >
           Submit a Grievance
         </h2>
         <form onSubmit={handleSubmit}>
@@ -389,7 +437,7 @@ function Portal({
               borderRadius: 8,
               border: "1.5px solid #d1a8ec",
               fontSize: 18,
-              background: "#f3eafe"
+              background: "#f3eafe",
             }}
           />
 
@@ -408,12 +456,14 @@ function Portal({
               padding: 14,
               marginBottom: 12,
               background: "#f3eafe",
-              outline: "none"
+              outline: "none",
             }}
           />
 
-         {/* Severity */}
-          <div style={{ margin: "18px 0 8px 0", fontWeight: 500, color: "#7c60a1" }}>Severity:</div>
+          {/* Severity */}
+          <div style={{ margin: "18px 0 8px 0", fontWeight: 500, color: "#7c60a1" }}>
+            Severity:
+          </div>
           <div style={{ display: "flex", alignItems: "center", marginBottom: 12, justifyContent: "center" }}>
             <input
               type="range"
@@ -422,22 +472,23 @@ function Portal({
               value={severity}
               onChange={e => setSeverity(Number(e.target.value))}
               style={{
-                accentColor: getSeverityColor(severity), // Modern browsers
+                accentColor: getSeverityColor(severity),
                 width: 130,
-              background: "#eee"
+                background: "#eee",
               }}
             />
-            <span style={{
-              marginLeft: 12,
-              color: getSeverityColor(severity),
-              fontWeight: 700,
-              fontSize: 22,
-              minWidth: 28
-            }}>
+            <span
+              style={{
+                marginLeft: 12,
+                color: getSeverityColor(severity),
+                fontWeight: 700,
+                fontSize: 22,
+                minWidth: 28,
+              }}
+            >
               {severity} / 5
             </span>
           </div>
-
 
           {/* Mood Selector */}
           <div style={{ margin: "22px 0 18px 0", fontWeight: 500, color: "#7c60a1", textAlign: "center" }}>
@@ -453,25 +504,28 @@ function Portal({
                 fontSize: 18,
                 background: "#f3eafe",
                 border: "1.5px solid #d1a8ec",
-                marginRight: 18
+                marginRight: 18,
               }}
             >
               {MOOD_OPTIONS.map(opt => (
-                <option value={opt.value} key={opt.value}>{opt.label}</option>
+                <option value={opt.value} key={opt.value}>
+                  {opt.label}
+                </option>
               ))}
             </select>
-          <img
+            <img
               src={MOOD_OPTIONS.find(opt => opt.value === mood).img}
               alt={mood}
               style={{
-                width: 64,         // make image bigger
-                height: 64,        // make image bigger
+                width: 128,
+                height: 128,
                 verticalAlign: "middle",
                 marginLeft: 4,
                 borderRadius: "50%",
                 border: "2.5px solid #b57edc",
                 background: "#fff",
-                objectFit: "cover"
+                objectFit: "cover",
+                objectPosition: MOOD_IMG_POSITIONS[mood] || "center",
               }}
             />
           </div>
@@ -484,15 +538,13 @@ function Portal({
               width: "100%",
               margin: "0 auto",
               fontSize: 18,
-              fontWeight: 700
+              color: "#222",
             }}
           >
-            ➡️ Submit Grievance 
+            ➡️ Submit Grievance
           </button>
         </form>
-        {/* Feedback message */}
         {submitMsg && <div style={{ color: "#2e7d32", marginTop: 14 }}>{submitMsg}</div>}
-        {/* Optionally add navigation buttons below */}
         <button
           onClick={() => navigate("/grievances")}
           style={{
@@ -516,7 +568,7 @@ function Portal({
             width: "100%",
             padding: 10,
             background: "#f3eafe",
-            color: "#a98fdc",
+            color: "#222",
             border: "none",
             borderRadius: 8,
             fontSize: 16,
@@ -526,8 +578,34 @@ function Portal({
           🚪 Log Out
         </button>
       </div>
+
+      {/* Right image */}
+      <img
+        src="/png/shoes.png"
+        alt="Right"
+        style={{
+          width: 450,
+          height: "auto",
+          marginLeft: -120,
+        }}
+      />
     </div>
-  );
+
+    {/* BOTTOM IMAGE below everything */}
+    <img
+      src="/png/party.png"
+      alt="Bottom"
+      style={{
+        width: 350,
+        height: "auto",
+        marginTop: -180,
+        marginLeft: 50,
+        opacity: 0.85,
+      }}
+    />
+  </div>
+);
+
 }
 
 // ----------- Grievances View Page -----------
@@ -575,13 +653,30 @@ function GrievancesView({ token, grievances, fetchGrievances, handleLogout, user
 
   const moodImg = (mood) => MOOD_OPTIONS.find(opt => opt.value === mood)?.img;
 
+  const MOOD_IMG_POSITIONS = {
+  happy: "center 50%",
+  sad: "center 40%",
+  angry: "center 50%",
+  cute: "center 53%",
+  confused: "center 100%",
+  oop: "center 53%",
+  magical: "center 53%",
+  professional: "center 1%",
+  yucky: "center 53%", transform: "scale(2)",
+};
+
+
   return (
     <div
       style={{
         minHeight: "100vh",
         background: "#f3eafe",
         padding: "30px 0",
-      }}
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+    }}
     >
       <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 1rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
@@ -630,7 +725,18 @@ function GrievancesView({ token, grievances, fetchGrievances, handleLogout, user
 
               {/* Mood cat */}
               <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-                <img src={moodImg(g.mood)} alt={g.mood} style={{ width: 42, height: 42, borderRadius: "50%", border: "2px solid #b57edc", marginRight: 14 }} />
+                <img src={moodImg(g.mood)} 
+                    alt={g.mood} 
+                style={{ 
+                  width:128, 
+                  height: 128, 
+                  borderRadius: "50%", 
+                  border: "2px solid #b57edc", 
+                  marginRight: 14,
+                  objectFit: "cover",
+                  objectPosition:MOOD_IMG_POSITIONS[g.mood] || "center", 
+                }} 
+                />
                 <div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: "#7c60a1" }}>
                     {g.title || <i>(No title)</i>}
@@ -721,6 +827,17 @@ function GrievancesView({ token, grievances, fetchGrievances, handleLogout, user
         </div>
         {/* SCROLLABLE CONTAINER ENDS HERE */}
       </div>
+       {/* Bottom image */}
+    <img
+      src="/png/2stink.png"
+      alt="Bottom"
+      style={{
+        width: 640,
+        height: "auto",
+        marginTop: 32,
+        opacity: 0.85,
+      }}
+    />
     </div>
   );
 }
