@@ -20,8 +20,10 @@ body {
   background-color: #111;
   font-family: 'Signika Negative', 'Asap', sans-serif;
   color: white;
-  overflow: hidden;
+  overflow-x: hidden;  /* prevent horizontal scroll */
+  overflow-y: auto;    /*  allow vertical scroll */
 }
+
 .dot {
   width: 35px;
   height: 35px;

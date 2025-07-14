@@ -96,7 +96,7 @@ function Landing() {
         background: "lavender",
       }}
     >
-      <div id="container" style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 0 }} />
+      <div id="container" style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 0, pointerEvents: "none" }} />
       <div style={{ zIndex: 1, position: "relative" }}>
         <h1 style={{ marginBottom: 24, textAlign: "center", color: "#222" }}>💖 Welcome, Stink! 💖</h1>
         <p style={{ fontSize: 20, marginBottom: 40, textAlign: "center", lineHeight: 1.75, color: "#222" }}>
@@ -292,34 +292,23 @@ function getSeverityColor(severity) {
   The main page shown after a successful login.
   Allows users to submit grievances and see their previous submissions.
 */
-function Portal({
-  token,
-  grievances,
-  fetchGrievances,
-  handleLogout
-}) {
+function Portal({ token, grievances, fetchGrievances, handleLogout }) {
   const navigate = useNavigate();
-
-  // Form fields state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [severity, setSeverity] = useState(3);
   const [mood, setMood] = useState(MOOD_OPTIONS[0].value);
-
-  // Feedback to the user
   const [submitMsg, setSubmitMsg] = useState("");
 
   if (!token) {
     return <div style={{ textAlign: "center", marginTop: "5rem" }}>Please log in first.</div>;
   }
 
-  // Handles logging out and redirects to home
   const handleLogoutAndRedirect = () => {
     handleLogout();
     navigate("/");
   };
 
-  // Submit the grievance to the backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitMsg("");
@@ -339,274 +328,261 @@ function Portal({
       setSubmitMsg("Failed to submit: " + (err.response?.data?.error || "Unknown error"));
     }
   };
+
   const MOOD_IMG_POSITIONS = {
-  happy: "center 50%",
-  sad: "center 40%",
-  angry: "center 50%",
-  cute: "center 53%",
-  confused: "center 100%",
-  oop: "center 53%",
-  magical: "center 53%",
-  professional: "center 1%",
-  yucky: "center 53%",
-};
+    happy: "center 50%",
+    sad: "center 40%",
+    angry: "center 50%",
+    cute: "center 53%",
+    confused: "center 100%",
+    oop: "center 53%",
+    magical: "center 53%",
+    professional: "center 1%",
+    yucky: "center 53%",
+  };
 
   return (
-  <div
-    style={{
-      minHeight: "100vh",
-      background: "#b57edc",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      position: "relative",
-    }}
-  >
-    {/* Side images & card in a row */}
     <div
       style={{
+        minHeight: "100vh",
+        background: "#b57edc",
         display: "flex",
-        flexDirection: "row",
+        flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        width: "100%",
-        maxWidth: 1200,
-        margin: "0 auto",
-        marginTop: 40,
-        marginBottom: 30,
+        overflowY: "auto",
+        padding: "40px 20px",
       }}
     >
-      {/* Left image */}
-      <img
-        src="/png/outside.png"
-        alt="Left"
-        style={{
-          width: 450,
-          height: 800,
-          marginRight: -136,
-          marginBottom: 400,
-        }}
-      />
-
-      {/* Main card */}
+      {/* Images + Form Row */}
       <div
         style={{
-          background: "white",
-          borderRadius: 28,
-          boxShadow: "0 8px 32px #0002",
-          padding: "2.5rem 2.5rem 2rem 2.5rem",
-          maxWidth: 430,
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          alignItems: "flex-start",
           width: "100%",
-          textAlign: "center",
-          zIndex: 2,
-          position: "relative",
+          maxWidth: 1400,
+          gap: 20,
         }}
       >
+        {/* Left image */}
         <img
-          src="/png/pee.png"
-          alt="Decorative"
+          src="/png/party.png"
+          alt="Left"
           style={{
-            width: 128,
-            height: 200,
-            marginBottom: -50,
+            flexShrink: 0,
+            minWidth: 220,
+            width: "25%",
+            maxWidth: 600,
+            height: "auto",
+            marginTop: 200,
           }}
         />
-        <h2
+
+        {/* Form */}
+        <div
           style={{
-            color: "#b57edc",
-            marginBottom: 24,
-            fontWeight: 700,
-            fontSize: 26,
+            flex: "1 1 350px",
+            minWidth: 320,
+            maxWidth: 460,
+            background: "white",
+            borderRadius: 28,
+            boxShadow: "0 8px 32px #0002",
+            padding: "2.5rem",
+            textAlign: "center",
           }}
         >
-          Submit a Grievance
-        </h2>
-        <form onSubmit={handleSubmit}>
-          {/* Title */}
-          <input
-            type="text"
-            placeholder="Title"
-            value={title}
-            required
-            onChange={e => setTitle(e.target.value)}
-            style={{
-              width: "100%",
-              padding: 12,
-              marginBottom: 12,
-              borderRadius: 8,
-              border: "1.5px solid #d1a8ec",
-              fontSize: 18,
-              background: "#f3eafe",
-            }}
+          <img
+            src="/png/pee.png"
+            alt="Decorative"
+            style={{ width: 128, height: 200, marginBottom: -50 }}
           />
+          <h2 style={{ color: "#b57edc", marginBottom: 24, fontWeight: 700, fontSize: 26 }}>
+            Submit a Grievance
+          </h2>
 
-          {/* Description */}
-          <textarea
-            placeholder="tell me about it stink..."
-            value={description}
-            required
-            onChange={e => setDescription(e.target.value)}
-            style={{
-              width: "100%",
-              minHeight: 90,
-              borderRadius: 14,
-              border: "1.5px solid #d1a8ec",
-              fontSize: 18,
-              padding: 14,
-              marginBottom: 12,
-              background: "#f3eafe",
-              outline: "none",
-            }}
-          />
-
-          {/* Severity */}
-          <div style={{ margin: "18px 0 8px 0", fontWeight: 500, color: "#7c60a1" }}>
-            Severity:
-          </div>
-          <div style={{ display: "flex", alignItems: "center", marginBottom: 12, justifyContent: "center" }}>
+          <form onSubmit={handleSubmit}>
             <input
-              type="range"
-              min="1"
-              max="5"
-              value={severity}
-              onChange={e => setSeverity(Number(e.target.value))}
+              type="text"
+              placeholder="Title"
+              value={title}
+              required
+              onChange={(e) => setTitle(e.target.value)}
               style={{
-                accentColor: getSeverityColor(severity),
-                width: 130,
-                background: "#eee",
-              }}
-            />
-            <span
-              style={{
-                marginLeft: 12,
-                color: getSeverityColor(severity),
-                fontWeight: 700,
-                fontSize: 22,
-                minWidth: 28,
-              }}
-            >
-              {severity} / 5
-            </span>
-          </div>
-
-          {/* Mood Selector */}
-          <div style={{ margin: "22px 0 18px 0", fontWeight: 500, color: "#7c60a1", textAlign: "center" }}>
-            Mood:
-          </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
-            <select
-              value={mood}
-              onChange={e => setMood(e.target.value)}
-              style={{
-                padding: 10,
+                width: "100%",
+                padding: 12,
+                marginBottom: 12,
                 borderRadius: 8,
+                border: "1.5px solid #d1a8ec",
                 fontSize: 18,
                 background: "#f3eafe",
-                border: "1.5px solid #d1a8ec",
-                marginRight: 18,
-              }}
-            >
-              {MOOD_OPTIONS.map(opt => (
-                <option value={opt.value} key={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <img
-              src={MOOD_OPTIONS.find(opt => opt.value === mood).img}
-              alt={mood}
-              style={{
-                width: 128,
-                height: 128,
-                verticalAlign: "middle",
-                marginLeft: 4,
-                borderRadius: "50%",
-                border: "2.5px solid #b57edc",
-                background: "#fff",
-                objectFit: "cover",
-                objectPosition: MOOD_IMG_POSITIONS[mood] || "center",
               }}
             />
-          </div>
+            <textarea
+              placeholder="tell me about it stink..."
+              value={description}
+              required
+              onChange={(e) => setDescription(e.target.value)}
+              style={{
+                width: "100%",
+                minHeight: 90,
+                borderRadius: 14,
+                border: "1.5px solid #d1a8ec",
+                fontSize: 18,
+                padding: 14,
+                marginBottom: 12,
+                background: "#f3eafe",
+              }}
+            />
+            <div style={{ margin: "18px 0 8px", fontWeight: 500, color: "#7c60a1" }}>
+              Severity:
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 12,
+              }}
+            >
+              <input
+                type="range"
+                min="1"
+                max="5"
+                value={severity}
+                onChange={(e) => setSeverity(Number(e.target.value))}
+                style={{
+                  accentColor: getSeverityColor(severity),
+                  width: 130,
+                  background: "#eee",
+                }}
+              />
+              <span
+                style={{
+                  marginLeft: 12,
+                  color: getSeverityColor(severity),
+                  fontWeight: 700,
+                  fontSize: 22,
+                  minWidth: 28,
+                }}
+              >
+                {severity} / 5
+              </span>
+            </div>
 
-          {/* Submit button */}
+            <div style={{ margin: "22px 0 18px", fontWeight: 500, color: "#7c60a1" }}>Mood:</div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 18,
+              }}
+            >
+              <select
+                value={mood}
+                onChange={(e) => setMood(e.target.value)}
+                style={{
+                  padding: 10,
+                  borderRadius: 8,
+                  fontSize: 18,
+                  background: "#f3eafe",
+                  border: "1.5px solid #d1a8ec",
+                  marginRight: 18,
+                }}
+              >
+                {MOOD_OPTIONS.map((opt) => (
+                  <option value={opt.value} key={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <img
+                src={MOOD_OPTIONS.find((opt) => opt.value === mood).img}
+                alt={mood}
+                style={{
+                  width: 128,
+                  height: 128,
+                  borderRadius: "50%",
+                  border: "2.5px solid #b57edc",
+                  background: "#fff",
+                  objectFit: "cover",
+                  objectPosition: MOOD_IMG_POSITIONS[mood] || "center",
+                }}
+              />
+            </div>
+
+            <button type="submit" className="lavender-btn" style={{ width: "100%", fontSize: 18, color: "#222" }}>
+              ➡️ Submit Grievance
+            </button>
+          </form>
+
+          {submitMsg && <div style={{ color: "#2e7d32", marginTop: 14 }}>{submitMsg}</div>}
+
           <button
-            type="submit"
-            className="lavender-btn"
+            onClick={() => navigate("/grievances")}
             style={{
+              marginTop: 24,
               width: "100%",
-              margin: "0 auto",
-              fontSize: 18,
+              padding: 12,
+              background: "#a98fdc",
               color: "#222",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 16,
+              cursor: "pointer",
             }}
           >
-            ➡️ Submit Grievance
+            📖 View Previous Grievances
           </button>
-        </form>
-        {submitMsg && <div style={{ color: "#2e7d32", marginTop: 14 }}>{submitMsg}</div>}
-        <button
-          onClick={() => navigate("/grievances")}
+          <button
+            onClick={handleLogoutAndRedirect}
+            style={{
+              marginTop: 18,
+              width: "100%",
+              padding: 10,
+              background: "#f3eafe",
+              color: "#222",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 16,
+              cursor: "pointer",
+            }}
+          >
+            🚪 Log Out
+          </button>
+        </div>
+
+        {/* Right image */}
+        <img
+          src="/png/shoes.png"
+          alt="Right"
           style={{
-            marginTop: 24,
-            width: "100%",
-            padding: 12,
-            background: "#a98fdc",
-            color: "#222",
-            border: "none",
-            borderRadius: 8,
-            fontSize: 16,
-            cursor: "pointer",
+            flexShrink: 0,
+            minWidth: 200,
+            width: "20%",
+            maxWidth: 280,
+            height: "auto",
+            marginTop: 250,
           }}
-        >
-          📖 View Previous Grievances
-        </button>
-        <button
-          onClick={handleLogoutAndRedirect}
-          style={{
-            marginTop: 18,
-            width: "100%",
-            padding: 10,
-            background: "#f3eafe",
-            color: "#222",
-            border: "none",
-            borderRadius: 8,
-            fontSize: 16,
-            cursor: "pointer",
-          }}
-        >
-          🚪 Log Out
-        </button>
+        />
       </div>
 
-      {/* Right image */}
-      <img
-        src="/png/shoes.png"
-        alt="Right"
+      {/* Bottom image */}
+      {/*<img
+        src="/png/outside.png"
+        alt="Bottom"
         style={{
           width: 450,
           height: "auto",
-          marginLeft: -120,
+          marginTop: -150,
+          opacity: 1,
         }}
-      />
+      />*/}
     </div>
-
-    {/* BOTTOM IMAGE below everything */}
-    <img
-      src="/png/party.png"
-      alt="Bottom"
-      style={{
-        width: 350,
-        height: "auto",
-        marginTop: -180,
-        marginLeft: 50,
-        opacity: 0.85,
-      }}
-    />
-  </div>
-);
-
+  );
 }
+
 
 // ----------- Grievances View Page -----------
 function GrievancesView({ token, grievances, fetchGrievances, handleLogout, username }) {
@@ -635,6 +611,7 @@ function GrievancesView({ token, grievances, fetchGrievances, handleLogout, user
     }
     setSubmitting((prev) => ({ ...prev, [grievanceId]: false }));
   };
+
   const handleDelete = async (grievanceId) => {
     if (!window.confirm("Are you sure you want to delete this grievance and all its replies?")) return;
     try {
@@ -678,7 +655,7 @@ function GrievancesView({ token, grievances, fetchGrievances, handleLogout, user
         justifyContent: "flex-start",
     }}
     >
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 1rem" }}>
+      <div style={{ maxWidth: 3700, margin: "0 auto", padding: "0 1rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
           <button onClick={() => navigate("/portal")} style={{ fontSize: 18, background: "#b57edc", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer" }}>← Back</button>
           <button onClick={() => { handleLogout(); navigate("/"); }} style={{ fontSize: 18, background: "#f3eafe", color: "#b57edc", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer" }}>Logout</button>
@@ -689,7 +666,8 @@ function GrievancesView({ token, grievances, fetchGrievances, handleLogout, user
         <div style={{
           maxHeight: "70vh",       // Scrollable area is 70% of the viewport height
           overflowY: "auto",
-          paddingRight: 10
+          paddingRight: 10,
+          width: "100%",
         }}>
           {grievances.length === 0 && <div style={{ textAlign: "center", color: "#aaa" }}>No grievances yet!</div>}
           {grievances.map((g, i) => (

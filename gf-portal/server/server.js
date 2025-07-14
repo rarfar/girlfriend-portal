@@ -1,4 +1,3 @@
-// Import the necessary libraries
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
@@ -6,13 +5,25 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 
 const app = express();
-const SECRET = "supersecretkey"; // Change this for production!
+const SECRET = "supersecretkey"; // Change this in production!
 
 app.use(cors());
 app.use(express.json());
 
-// ========== LOGIN ROUTE ==========
-// POST /api/login -- expects { username, password } in the body
+// ========== AUTH MIDDLEWARE ==========
+function auth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: "No token" });
+  const token = authHeader.split(' ')[1];
+  try {
+    req.user = jwt.verify(token, SECRET);
+    next();
+  } catch {
+    res.status(401).json({ error: "Invalid token" });
+  }
+}
+
+// ========== LOGIN ==========
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
   const db = new sqlite3.Database('grievances.db');
@@ -32,26 +43,13 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// ========== AUTH MIDDLEWARE ==========
-function auth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ error: "No token" });
-  const token = authHeader.split(' ')[1];
-  try {
-    req.user = jwt.verify(token, SECRET);
-    next();
-  } catch {
-    res.status(401).json({ error: "Invalid token" });
-  }
-}
-
 // ========== SUBMIT A GRIEVANCE ==========
-// POST /api/grievances -- expects { title, description, severity, mood } in the body
 app.post('/api/grievances', auth, (req, res) => {
   const db = new sqlite3.Database('grievances.db');
   const { title, description, severity, mood } = req.body;
   if (!title || !description || !severity || !mood)
     return res.status(400).json({ error: "All fields required" });
+
   const created_at = new Date().toISOString();
 
   db.run(
@@ -59,57 +57,59 @@ app.post('/api/grievances', auth, (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [req.user.userId, title, description, severity, mood, description, created_at],
     function (err) {
+      db.close();
       if (err) return res.status(500).json({ error: err.message });
       res.json({ success: true, id: this.lastID });
-      db.close();
     }
   );
 });
 
 // ========== LIST GRIEVANCES (with replies) ==========
-// GET /api/grievances -- returns all grievances for the logged-in user, each with .replies array
 app.get('/api/grievances', auth, (req, res) => {
   const db = new sqlite3.Database('grievances.db');
   db.all(
     `SELECT grievances.id, grievances.title, grievances.description, grievances.severity, grievances.mood, grievances.created_at, grievances.user_id, users.username
-    FROM grievances
-    JOIN users ON grievances.user_id = users.id
-    ORDER BY grievances.created_at DESC`,
+     FROM grievances
+     JOIN users ON grievances.user_id = users.id
+     ORDER BY grievances.created_at DESC`,
     [],
-    (err, rows) => {
-      if (err) return res.status(500).json({ error: err.message });
+    (err, grievances) => {
+      if (err) {
+        db.close();
+        return res.status(500).json({ error: err.message });
+      }
 
-      const grievanceIds = rows.map(g => g.id);
-      if (grievanceIds.length === 0) {
+      const ids = grievances.map(g => g.id);
+      if (ids.length === 0) {
         db.close();
         return res.json([]);
       }
 
       db.all(
-        `SELECT * FROM replies WHERE grievance_id IN (${grievanceIds.map(() => '?').join(',')}) ORDER BY created_at ASC`,
-        grievanceIds,
+        `SELECT * FROM replies WHERE grievance_id IN (${ids.map(() => '?').join(',')}) ORDER BY created_at ASC`,
+        ids,
         (err2, replies) => {
           db.close();
           if (err2) return res.status(500).json({ error: err2.message });
 
-          rows.forEach(grievance => {
+          grievances.forEach(grievance => {
             grievance.replies = replies.filter(r => r.grievance_id === grievance.id);
           });
 
-          res.json(rows);
+          res.json(grievances);
         }
       );
     }
   );
 });
 
-// ========== ADD A REPLY TO A GRIEVANCE ==========
-// POST /api/grievances/:id/reply -- expects { reply, author } in the body
+// ========== ADD REPLY ==========
 app.post('/api/grievances/:id/reply', auth, (req, res) => {
   const db = new sqlite3.Database('grievances.db');
   const grievance_id = req.params.id;
   const { reply, author } = req.body;
   if (!reply || !author) return res.status(400).json({ error: "Reply and author required" });
+
   const created_at = new Date().toISOString();
 
   db.run(
@@ -122,33 +122,36 @@ app.post('/api/grievances/:id/reply', auth, (req, res) => {
     }
   );
 });
-// DELETE /api/grievances/:id -- deletes grievance AND its replies
+
+// ========== DELETE GRIEVANCE (any user can delete) ==========
 app.delete('/api/grievances/:id', auth, (req, res) => {
-  const db = new sqlite3.Database('grievances.db');
   const grievance_id = req.params.id;
+  const db = new sqlite3.Database('grievances.db');
 
   db.serialize(() => {
-    // First, delete all replies for this grievance
+    // Delete replies first
     db.run("DELETE FROM replies WHERE grievance_id = ?", [grievance_id], function(err) {
       if (err) {
         db.close();
         return res.status(500).json({ error: err.message });
       }
-      // Then, delete the grievance itself (for THIS user)
-      db.run("DELETE FROM grievances WHERE id = ? AND user_id = ?", [grievance_id, req.user.userId], function(err2) {
+
+      // Then delete the grievance itself (no user check)
+      db.run("DELETE FROM grievances WHERE id = ?", [grievance_id], function(err2) {
         db.close();
         if (err2) return res.status(500).json({ error: err2.message });
+
         if (this.changes === 0) {
-          // Nothing deleted, either wrong user or no such grievance
-          return res.status(404).json({ error: "Not found" });
+          return res.status(404).json({ error: "Grievance not found" });
         }
+
         res.json({ success: true });
       });
     });
   });
 });
 
-// ========== (OPTIONAL) GET REPLIES FOR ONE GRIEVANCE ==========
+// ========== GET REPLIES FOR A GRIEVANCE ==========
 app.get('/api/grievances/:id/replies', auth, (req, res) => {
   const db = new sqlite3.Database('grievances.db');
   db.all(
@@ -162,7 +165,7 @@ app.get('/api/grievances/:id/replies', auth, (req, res) => {
   );
 });
 
-// ========== START THE SERVER ==========
+// ========== START SERVER ==========
 const PORT = 6969;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
