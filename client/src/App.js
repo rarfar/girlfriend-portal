@@ -846,6 +846,7 @@ function App() {
       setGrievances([]); // On error, show empty list
     }
   };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
    useEffect(() => {
     if (token) {
       fetchGrievances(token);
