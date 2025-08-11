@@ -178,26 +178,9 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-const originalUse = app.use.bind(app);
-app.use = (path, ...args) => {
-  console.log("[DEBUG] app.use called with:", path);
-  return originalUse(path, ...args);
-};
-
-const originalGet = app.get.bind(app);
-app.get = (path, ...args) => {
-  console.log("[DEBUG] app.get called with:", path);
-  return originalGet(path, ...args);
-};
-
-const originalPost = app.post.bind(app);
-app.post = (path, ...args) => {
-  console.log("[DEBUG] app.post called with:", path);
-  return originalPost(path, ...args);
-};
-
 // ========== START SERVER ==========
 const PORT = process.env.PORT || 6969;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+``
