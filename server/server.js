@@ -165,8 +165,22 @@ app.get('/api/grievances/:id/replies', auth, (req, res) => {
   );
 });
 
+// ========== RAILWAY ==========
+const path = require('path');
+
+// Serve React build in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../client/build")));
+  
+  // For any other route, serve index.html
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+  });
+}
+
+
 // ========== START SERVER ==========
-const PORT = 6969;
+const PORT = process.env.PORT || 6969;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
