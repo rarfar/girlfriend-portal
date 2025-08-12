@@ -3,6 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const SECRET = "supersecretkey"; // Change this in production!
@@ -123,20 +124,18 @@ app.post('/api/grievances/:id/reply', auth, (req, res) => {
   );
 });
 
-// ========== DELETE GRIEVANCE (any user can delete) ==========
+// ========== DELETE GRIEVANCE ==========
 app.delete('/api/grievances/:id', auth, (req, res) => {
   const grievance_id = req.params.id;
   const db = new sqlite3.Database('grievances.db');
 
   db.serialize(() => {
-    // Delete replies first
     db.run("DELETE FROM replies WHERE grievance_id = ?", [grievance_id], function(err) {
       if (err) {
         db.close();
         return res.status(500).json({ error: err.message });
       }
 
-      // Then delete the grievance itself (no user check)
       db.run("DELETE FROM grievances WHERE id = ?", [grievance_id], function(err2) {
         db.close();
         if (err2) return res.status(500).json({ error: err2.message });
@@ -151,7 +150,7 @@ app.delete('/api/grievances/:id', auth, (req, res) => {
   });
 });
 
-// ========== GET REPLIES FOR A GRIEVANCE ==========
+// ========== GET REPLIES ==========
 app.get('/api/grievances/:id/replies', auth, (req, res) => {
   const db = new sqlite3.Database('grievances.db');
   db.all(
@@ -165,22 +164,18 @@ app.get('/api/grievances/:id/replies', auth, (req, res) => {
   );
 });
 
-// ========== RAILWAY ==========
-const path = require('path');
-
-// Serve React build in production
+// ========== Serve React build in production ==========
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
-  
-  // For any other route, serve index.html
-  app.get("/{*any}", (req, res) => {
+
+  // Catch-all for React Router
+  app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "../client/build", "index.html"));
   });
 }
 
-// ========== START SERVER ==========
+// ========== Start server ==========
 const PORT = process.env.PORT || 6969;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
 });
-``
