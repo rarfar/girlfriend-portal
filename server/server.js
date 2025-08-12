@@ -169,7 +169,7 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
 
   // Catch-all for React Router
-  app.get("*", (req, res) => {
+  app.get("/{*any}", (req, res) => {
     res.sendFile(path.join(__dirname, "../client/build", "index.html"));
   });
 }
