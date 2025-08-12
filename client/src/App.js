@@ -134,7 +134,7 @@ function Login({ setToken, setUsername, fetchGrievances }) {
     e.preventDefault();
     setLoginError("");
     try {
-      const res = await axios.post("http://localhost:6969/api/login", {
+      const res = await axios.post("/api/login", {
         username: loginUsername, // Use local value!
         password,
       });
@@ -314,7 +314,7 @@ function Portal({ token, grievances, fetchGrievances, handleLogout }) {
     setSubmitMsg("");
     try {
       await axios.post(
-        "http://localhost:6969/api/grievances",
+        "/api/grievances",
         { title, description, severity, mood },
         { headers: { Authorization: "Bearer " + token } }
       );
@@ -600,7 +600,7 @@ function GrievancesView({ token, grievances, fetchGrievances, handleLogout, user
     setSubmitting((prev) => ({ ...prev, [grievanceId]: true }));
     try {
       await axios.post(
-        `http://localhost:6969/api/grievances/${grievanceId}/reply`,
+        `/api/grievances/${grievanceId}/reply`,
         { reply, author: username }, // Replace with real username if needed!
         { headers: { Authorization: "Bearer " + token } }
       );
@@ -615,7 +615,7 @@ function GrievancesView({ token, grievances, fetchGrievances, handleLogout, user
   const handleDelete = async (grievanceId) => {
     if (!window.confirm("Are you sure you want to delete this grievance and all its replies?")) return;
     try {
-      await axios.delete(`http://localhost:6969/api/grievances/${grievanceId}`, {
+      await axios.delete(`/api/grievances/${grievanceId}`, {
         headers: { Authorization: "Bearer " + token }
       });
       await fetchGrievances();
@@ -838,7 +838,7 @@ function App() {
   // Fetch grievances from backend for the logged-in user
   const fetchGrievances = async (jwt) => {
     try {
-      const res = await axios.get("http://localhost:6969/api/grievances", {
+      const res = await axios.get("/api/grievances", {
         headers: { Authorization: "Bearer " + (jwt || token) },
       });
       setGrievances(res.data); // Save grievances in state
@@ -859,7 +859,7 @@ function App() {
     setSubmitMsg(""); // Clear old message
     try {
       await axios.post(
-        "http://localhost:6969/api/grievances",
+        "/api/grievances",
         { content },
         {
           headers: { Authorization: "Bearer " + token },
