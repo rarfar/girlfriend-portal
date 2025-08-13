@@ -8,7 +8,7 @@ const db = new sqlite3.Database('grievances.db');
 // Set the username and password for the new user
 //const username = 'kyra<3';                // The login name you want
 //const password = 'stinky123';  // The password (will be hashed!)
-const username = 'ryan<3';
+const username = 'kyra<3';
 const password = 'stinky123';
 
 // Hash the password using bcrypt (10 rounds of salting)

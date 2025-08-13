@@ -11,6 +11,74 @@ const SECRET = "supersecretkey"; // Change this in production!
 app.use(cors());
 app.use(express.json());
 
+// ====== DATABASE INITIALIZATION ======
+const dbInit = new sqlite3.Database('grievances.db');
+
+dbInit.serialize(() => {
+  // Create users table
+  dbInit.run(`CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
+  )`);
+
+  // Create grievances table
+  dbInit.run(`CREATE TABLE IF NOT EXISTS grievances (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    title TEXT,
+    description TEXT,
+    severity INTEGER,
+    mood TEXT,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  )`);
+
+  // Create replies table
+  dbInit.run(`CREATE TABLE IF NOT EXISTS replies (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    grievance_id INTEGER NOT NULL,
+    reply TEXT NOT NULL,
+    author TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(grievance_id) REFERENCES grievances(id)
+  )`);
+
+  // Insert default users if not exist
+  const defaultUsers = [
+    { username: 'kyra<3', password: 'stinky123' },
+    { username: 'ryan<3', password: 'poopy123' }
+  ];
+
+  defaultUsers.forEach(user => {
+    dbInit.get("SELECT * FROM users WHERE username = ?", [user.username], (err, row) => {
+      if (err) {
+        console.error("DB check error:", err);
+        return;
+      }
+      if (!row) {
+        bcrypt.hash(user.password, 10, (err, hash) => {
+          if (err) {
+            console.error("Password hash error:", err);
+            return;
+          }
+          dbInit.run("INSERT INTO users (username, password) VALUES (?, ?)", [user.username, hash], (err) => {
+            if (err) {
+              console.error(`Error adding user ${user.username}:`, err.message);
+            } else {
+              console.log(`Default user added: ${user.username}`);
+            }
+          });
+        });
+      }
+    });
+  });
+});
+
+dbInit.close();
+console.log("Database initialized and default users ensured.");
+
 // ========== AUTH MIDDLEWARE ==========
 function auth(req, res, next) {
   console.log(`Auth middleware checking token for path: ${req.path}`);
@@ -91,7 +159,7 @@ app.post('/api/grievances', auth, (req, res) => {
   );
 });
 
-// ========== LIST GRIEVANCES (with replies) ==========
+// ========== LIST GRIEVANCES ==========
 app.get('/api/grievances', auth, (req, res) => {
   console.log(`List grievances requested by userId: ${req.user.userId}`);
   const db = new sqlite3.Database('grievances.db');
@@ -219,9 +287,7 @@ app.get('/api/grievances/:id/replies', auth, (req, res) => {
 // ========== Serve React build in production ==========
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
-
-  // Catch-all for React Router
-  app.get("/{*any}", (req, res) => {
+  app.get("/*", (req, res) => {
     res.sendFile(path.join(__dirname, "../client/build", "index.html"));
   });
 }
