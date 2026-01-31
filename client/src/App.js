@@ -393,7 +393,7 @@ function Portal({ token, grievances, fetchGrievances, handleLogout }) {
           }}
         >
           <img
-            src="/png/pee.png"
+            src="/png/outside.png" ///////pee.png here
             alt="Decorative"
             style={{ width: 128, height: 200, marginBottom: -50 }}
           />
