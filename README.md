@@ -6,7 +6,7 @@ That summer for her birthday, I built her my own version of this portal and she 
 
 We both have our own unique accounts and can each add, reply and delete grievances/posts.
 
-At first I deployed it using Railway, however the free trial ended after a few months. I decided to re-dploy it using Render and MongoDB Atlas which do not have a time-restricted free trial. 
+At first I deployed it using Railway, however the free trial ended after a few months. I decided to re-dploy it using Render and MongoDB Atlas which do not have a time-restricted free trial. I did this with the help of ClaudeCode.
 
 
 ## Features
